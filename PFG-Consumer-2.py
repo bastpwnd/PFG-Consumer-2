@@ -2,7 +2,7 @@ from kafka import KafkaConsumer
 import mysql.connector as mariadb
 import time
 def connectDatabase():
-    mariadb_connection = mariadb.connect(user='root', password='root', database='PFG-DATABASE')
+    mariadb_connection = mariadb.connect(user='root', password='root',host='MariaDB', database='PFG-DATABASE')
     cursor = mariadb_connection.cursor()
 
     return mariadb_connection,cursor
