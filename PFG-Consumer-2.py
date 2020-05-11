@@ -1,8 +1,10 @@
 from kafka import KafkaConsumer
 import mysql.connector as mariadb
 import time
+from datetime import datetime
 def connectDatabase():
-    mariadb_connection = mariadb.connect(user='root', password='root',host='MariaDB', database='PFG-DATABASE')
+    #mariadb_connection = mariadb.connect(user='root', password='root',host='MariaDB', database='PFG-DATABASE')
+    mariadb_connection = mariadb.connect(user='root', password='root', database='PFG-DATABASE')
     cursor = mariadb_connection.cursor()
 
     return mariadb_connection,cursor
@@ -13,12 +15,12 @@ def printProducts(cursor):
     for Productos in cursor:
         print(Productos)
 
-def main():
-    time.sleep(10)
-    print("After")
-    mariadb_connection,cursor = connectDatabase()
-    print("Before")
 
+
+def main():
+    time.sleep(5)
+    mariadb_connection,cursor = connectDatabase()
+    productos = []
     bootstrap_servers = ['kafka:9092']
     #localhost
     #bootstrap_servers = ['localhost:29092']
@@ -30,13 +32,17 @@ def main():
                           auto_offset_reset = 'earliest')
         for message in consumer:
             evento = bytes.decode(message.value)
+
+            productos.append(evento)
             producto = evento.split(":")[0]
             idProducto = evento.split(":")[1]
-            query =("INSERT INTO Eventos (Productos,id) VALUES (%s,%s)")
-            cursor.execute(query,(producto,idProducto,))
+            eventoCreado = datetime.fromtimestamp(float(message.timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
+            eventoRecibido= datetime.now()
+            query =("INSERT INTO Eventos (Productos,id,Creado,Recibido) VALUES (%s,%s,%s,%s)")
+            cursor.execute(query,(producto,idProducto,eventoCreado,eventoRecibido,))
             mariadb_connection.commit()
             print(evento)
-            print(message)
+
 if __name__== "__main__":
 
     main()
