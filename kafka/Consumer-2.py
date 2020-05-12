@@ -3,19 +3,12 @@ import time
 import infrastructure.DataBase as database
 from datetime import datetime
 
-def main():
-    time.sleep(5)
-    mariadb_connection,cursor = database.connectDatabase()
+def consumeRecords(topicName,bootstrap_servers,mariadb_connection,cursor):
     productos = []
-    bootstrap_servers = ['kafka:9092']
-    #localhost
-    #bootstrap_servers = ['localhost:29092']
-    topicName = 'test_1'
-    database.printProducts(cursor)
     while(True):
 
         consumer = KafkaConsumer(topicName, group_id = 'group1',bootstrap_servers = bootstrap_servers,
-                          auto_offset_reset = 'earliest')
+                                 auto_offset_reset = 'earliest')
         for message in consumer:
             evento = bytes.decode(message.value)
             print(evento)
@@ -26,6 +19,20 @@ def main():
             eventoRecibido= datetime.now()
             database.insertProducts(cursor,producto,idProducto,eventoCreado,eventoRecibido)
             mariadb_connection.commit()
+
+def main():
+    time.sleep(5)
+    mariadb_connection,cursor = database.connectDatabase()
+
+    bootstrap_servers = ['kafka:9092']
+    #localhost
+    #bootstrap_servers = ['localhost:29092']
+
+    topicName = 'test_1'
+    database.printProducts(cursor)
+
+    consumeRecords(topicName,bootstrap_servers,mariadb_connection,cursor)
+
 
 if __name__== "__main__":
     main()
