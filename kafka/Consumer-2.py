@@ -3,6 +3,7 @@ import time
 import infrastructure.DataBase as database
 from datetime import datetime
 
+#Method to consume all events
 def consumeRecords(topicName,bootstrap_servers,mariadb_connection,cursor):
     productos = []
     while(True):
